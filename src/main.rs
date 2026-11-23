@@ -53,16 +53,6 @@ async fn main() {
         .expect("Can be bind admin port");
 
     tracing::info!("Listen (proxy): {}", cli.listen_proxy);
-    let time = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap()
-        .as_secs()
-        + 20;
-
-    tracing::info!("{time}");
-    let signature = sign::sign(&cli.private_key, "gr011", "480p", time);
-
-    tracing::info!("{signature}");
 
     tokio::select! {
         _ = proxy::run(proxy_sock, &cli.konomitv_host, &cli.private_key) => {},

@@ -898,7 +898,6 @@ dependencies = [
  "hex",
  "hmac",
  "http",
- "hybrid-array",
  "random_str",
  "reqwest",
  "sha2",

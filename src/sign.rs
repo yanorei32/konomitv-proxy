@@ -1,5 +1,4 @@
 use hmac::{Hmac, KeyInit, Mac};
-use hybrid_array::{Array, sizes::U32};
 use sha2::Sha256;
 
 type HmacSha256 = Hmac<Sha256>;

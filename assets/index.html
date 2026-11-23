@@ -14,12 +14,109 @@
 			max-width: 800px;
 			width: 100%;
 			margin: auto;
+			padding: 5px;
+			box-sizing: border-box;
+		}
+		div:has(> button) {
+			text-align: right;
 		}
 	</style>
 </head>
 <body>
 	<div class=container>
 		<h1>Admin Panel</h1>
+		<p>
+			Duration:
+			<select id=duration>
+				<option value=600>10 min</option>
+				<option value=900>15 min</option>
+				<option value=1800>30 min</option>
+				<option value=3600 default>1 hour</option>
+				<option value=10800>3 hours</option>
+				<option value=21600>6 hours</option>
+				<option value=43200>12 hours</option>
+				<option value=86400>1 day</option>
+				<option value=259200>3 day</option>
+				<option value=604800>7 day</option>
+			</select>
+		</p>
+		<p>
+			Resolution:
+			<select id=resolution>
+				<option value=240p>240p</option>
+				<option value=360p>360p</option>
+				<option value=480p>480p</option>
+				<option value=720p default>720p</option>
+				<option value=1080p-24fps>1080p 24fps</option>
+				<option value=1080p-30fps>1080p 30fps</option>
+				<option value=1080p-60fps>1080p 60fps</option>
+			</select>
+		</p>
+		<div id=panel></div>
 	</div>
+	<script>
+		async function refresh() {
+			const response = await fetch("/api/channels");
+
+			if (!response.ok) {
+				alert("Failed to get /api/channels");
+				return;
+			}
+
+			const data = await response.json();
+
+			const panel = document.getElementById("panel");
+			panel.innerHTML = '';
+
+			for (const t of ["GR", "BS", "CS", "CATV", "SKY", "BS4K"]) {
+				if (data[t].length === 0) continue;
+
+				for (const channel of data[t]) {
+					if (channel.program_present === null) continue;
+
+					const channel_div = document.createElement("div");
+
+					const channel_header = document.createElement("h2");
+					channel_header.textContent = `${t} ${channel.name}`;
+					channel_div.appendChild(channel_header);
+
+					const div_program = document.createElement("div");
+					div_program.textContent = channel.program_present?.title ?? "-";
+					channel_div.appendChild(div_program);
+
+					const button_div = document.createElement("div");
+					const button_button = document.createElement("button");
+					button_button.textContent = "COPY";
+
+					button_button.addEventListener("click", async (event) => {
+						const duration = document.getElementById("duration").value;
+						const resolution = document.getElementById("resolution").value;
+
+						const response = await fetch(`/api/auth/${channel.display_channel_id}/${resolution}/${duration}`);
+
+						if (!response.ok) {
+							alert(`Failed to get /api/auth/${channel.display_channel_id}/${resolution}/${duration}`);
+							return;
+						}
+
+						await navigator.clipboard.writeText(await response.text());
+					});
+
+					button_div.appendChild(button_button);
+					channel_div.appendChild(button_div);
+
+					panel.appendChild(channel_div);
+				}
+			}
+		}
+
+		window.addEventListener("load", async event => {
+			await refresh();
+		});
+
+		setInterval(30000, async event => {
+			await refresh();
+		});
+	</script>
 </body>
 </html>
