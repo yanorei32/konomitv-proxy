@@ -23,6 +23,8 @@ RUN touch  assets/* src/* && cargo build --release
 
 FROM debian:trixie-slim
 
+RUN apt-get update -y && apt-get install -y ca-certificates && sudo rm -rf /var/lib/apt/lists/*
+
 WORKDIR /
 
 COPY --chown=root:root --from=build-env \
